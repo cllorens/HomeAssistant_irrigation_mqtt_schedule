@@ -1,0 +1,472 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>Irrigation JSON MQTT SCHEDULER</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/all.min.css" rel="stylesheet">
+<link href="css/tempusdominus-bootstrap-4.min.css" rel="stylesheet">
+<link href="css/alertify.core.css" rel="stylesheet"/>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/moment.min.js"></script>
+<script src="js/tempusdominus-bootstrap-4.min.js"></script>
+<script src="js/alertify.min.js"></script>
+
+<style>
+.top-buffer { margin-top:10px; }
+.bottom-buffer { margin-bottom:10px; }
+
+.timeselect {width: 160px;}
+.backgroundcolor {background-color: #ebf7fa;}
+</style>
+
+</head>
+  <body>
+
+    <div class="container backgroundcolor">
+	<div class="row">
+	<object type="image/svg+xml" data="riego.svg" class="mx-auto d-block top-buffer bottom-buffer" id="svg" width="60%"></object>
+	</div>
+	</div>
+
+	<div id='SCHEDULES'><br><br><center>CONECTING WITH MQTT SERVER</center></div>
+
+  <script type="text/javascript">
+	/**************************/
+	// 	RECONNECT WEBSOCKET
+	/**************************/
+	!function(a,b){"function"==typeof define&&define.amd?define([],b):"undefined"!=typeof module&&module.exports?module.exports=b():a.ReconnectingWebSocket=b()}(this,function(){function a(b,c,d){function l(a,b){var c=document.createEvent("CustomEvent");return c.initCustomEvent(a,!1,!1,b),c}var e={debug:!1,automaticOpen:!0,reconnectInterval:1e3,maxReconnectInterval:3e4,reconnectDecay:1.5,timeoutInterval:2e3};d||(d={});for(var f in e)this[f]="undefined"!=typeof d[f]?d[f]:e[f];this.url=b,this.reconnectAttempts=0,this.readyState=WebSocket.CONNECTING,this.protocol=null;var h,g=this,i=!1,j=!1,k=document.createElement("div");k.addEventListener("open",function(a){g.onopen(a)}),k.addEventListener("close",function(a){g.onclose(a)}),k.addEventListener("connecting",function(a){g.onconnecting(a)}),k.addEventListener("message",function(a){g.onmessage(a)}),k.addEventListener("error",function(a){g.onerror(a)}),this.addEventListener=k.addEventListener.bind(k),this.removeEventListener=k.removeEventListener.bind(k),this.dispatchEvent=k.dispatchEvent.bind(k),this.open=function(b){h=new WebSocket(g.url,c||[]),b||k.dispatchEvent(l("connecting")),(g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","attempt-connect",g.url);var d=h,e=setTimeout(function(){(g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","connection-timeout",g.url),j=!0,d.close(),j=!1},g.timeoutInterval);h.onopen=function(){clearTimeout(e),(g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","onopen",g.url),g.protocol=h.protocol,g.readyState=WebSocket.OPEN,g.reconnectAttempts=0;var d=l("open");d.isReconnect=b,b=!1,k.dispatchEvent(d)},h.onclose=function(c){if(clearTimeout(e),h=null,i)g.readyState=WebSocket.CLOSED,k.dispatchEvent(l("close"));else{g.readyState=WebSocket.CONNECTING;var d=l("connecting");d.code=c.code,d.reason=c.reason,d.wasClean=c.wasClean,k.dispatchEvent(d),b||j||((g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","onclose",g.url),k.dispatchEvent(l("close")));var e=g.reconnectInterval*Math.pow(g.reconnectDecay,g.reconnectAttempts);setTimeout(function(){g.reconnectAttempts++,g.open(!0)},e>g.maxReconnectInterval?g.maxReconnectInterval:e)}},h.onmessage=function(b){(g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","onmessage",g.url,b.data);var c=l("message");c.data=b.data,k.dispatchEvent(c)},h.onerror=function(b){(g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","onerror",g.url,b),k.dispatchEvent(l("error"))}},1==this.automaticOpen&&this.open(!1),this.send=function(b){if(h)return(g.debug||a.debugAll)&&console.debug("ReconnectingWebSocket","send",g.url,b),h.send(b);throw"INVALID_STATE_ERR : Pausing to reconnect websocket"},this.close=function(a,b){"undefined"==typeof a&&(a=1e3),i=!0,h&&h.close(a,b)},this.refresh=function(){h&&h.close()}}return a.prototype.onopen=function(){},a.prototype.onclose=function(){},a.prototype.onconnecting=function(){},a.prototype.onmessage=function(){},a.prototype.onerror=function(){},a.debugAll=!1,a.CONNECTING=WebSocket.CONNECTING,a.OPEN=WebSocket.OPEN,a.CLOSING=WebSocket.CLOSING,a.CLOSED=WebSocket.CLOSED,a});
+
+	function IsJsonString(str)
+			{
+	    try {JSON.parse(str);}
+			catch (e) {return false;}
+	    return true;
+			}
+
+  /**************************/
+	// DEFAULT SCHEDULE
+	/**************************/
+	var DefaultSchedule = [{"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}},
+												 {"OUT":0,"START_TIME":{"HOUR":0,"MINUTES":0},"MINUTES":1,"DAYS":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0},"SEASONS":{"1":0,"2":0,"3":0,"4":0}}];
+
+  /**************************/
+	// SELECT WS PROTOCOL
+	/**************************/
+	var httpProtocol = 'http://';
+	var wsProtocol = 'ws://';
+	if (window.location.protocol === 'https:')
+		{
+		httpProtocol = 'http://';
+		wsProtocol = 'wss://';
+		}
+
+	/**************************/
+	// CREATE WEBSOCKET
+	/**************************/
+	const socket = new ReconnectingWebSocket(wsProtocol + location.host + "/api/websocket");
+
+	/**************************/
+	// ADD SOCKET EVENT LISTENERS
+	/**************************/
+	socket.addEventListener('open',       function(event) { console.log("CONNECTED"); });
+	socket.addEventListener('close',      function(event) { console.log("DISCONNECTED"); });
+	socket.addEventListener('connecting', function(event) { console.log("CONNECTING"); });
+	socket.addEventListener('error',      function(event) { console.log("ERROR"); });
+	socket.addEventListener('message', Parse_WebSocket);
+
+	/**************************/
+	// PARSE WEBSOCKET HA API
+	/**************************/
+	function Parse_WebSocket(event)
+			{
+			// Parse socket response
+			RES=JSON.parse(event.data);
+
+			////////////////////////////////////
+			// IF auth_required, SEND AUTH TOKEN
+			////////////////////////////////////
+			if (RES.type=='auth_required')
+				{
+				console.log("AUTH REQUIRED");
+				// REFRESH TOKEN
+				refresh_token();
+				sleep(200);
+
+				// GET LOCALSTORAGE TOKEN
+				var hassTokens = JSON.parse(localStorage.getItem('hassTokens'));
+				var auth = {};
+				auth.type = "auth";
+				auth.access_token = hassTokens.access_token;
+
+				// SEND AUTH
+				socket.send(JSON.stringify(auth));
+				}
+
+			////////////////////////////////////
+			// IF auth_invalid
+			////////////////////////////////////
+			if (RES.type=='auth_invalid')
+				{
+				console.log("AUTH INVALID");
+				}
+
+			////////////////////////////////////
+			// IF auth_OK, SUBSCRIBE TO EVENTS
+			////////////////////////////////////
+			if (RES.type=='auth_ok')
+				{
+				console.log("AUTH OK");
+				// create get_states object
+				console.log("GET STATES");
+				var get_states={};
+				get_states.type='get_states';
+				get_states.id=1;
+
+				// SEND subscribe_events
+				socket.send(JSON.stringify(get_states));
+
+				// create subscribe_events object
+				console.log("SUBSCRIBE EVENTS");
+				var subscribe_events={};
+				subscribe_events.type='subscribe_events';
+				subscribe_events.id=2;
+				// optional
+				subscribe_events.event_type='state_changed';
+
+				// SEND subscribe_events
+				socket.send(JSON.stringify(subscribe_events));
+				}
+
+		  // ON GET STATES RESULT
+			if (RES.type=='result' && RES.id==1)
+				{
+				RES.result.forEach(
+					function(element)
+						{
+						//console.log(element);
+						entity_id=element.entity_id;
+						new_state=element.state;
+						for (var n=0;n<10;n++)
+							{
+							if (entity_id=="input_text.shedule"+n.toString())
+								{
+								console.log(entity_id+"="+new_state);
+							  if (IsJsonString(new_state)) DefaultSchedule[n]=JSON.parse(new_state);
+								}
+							}
+						});
+						ModifyHtml(DefaultSchedule);
+				}
+
+			// ON EVENT
+			if (RES.type=='event')
+				{
+				entity_id=RES.event.data.entity_id;
+				new_state=RES.event.data.new_state.state;
+
+				for (var n=0;n<10;n++)
+					{
+					if (entity_id=="input_text.shedule"+n.toString())
+						{
+						console.log(entity_id+"="+new_state);
+						DefaultSchedule[n]=JSON.parse(new_state);
+						ModifyHtml(DefaultSchedule);
+						}
+					}
+				}
+
+				// ON RESULT OK
+				if (RES.type=='result' && RES.id>=10)
+					{
+					if (RES.success) alertify.success("PUBLISHED:"+RES.id);
+					else alertify.error("NOT PUBLISHED:"+RES.id);
+					}
+			}
+
+
+	// ON EVENT MODIFY SCHEDULES
+	function ModifyHtml(schedules)
+		{
+			console.log(schedules);
+
+			// create html
+			var html="";
+
+			for (const [sch, schedule] of Object.entries(schedules))
+				{
+				// SET CONTAINER
+				html+='<div class="container backgroundcolor">';
+				html+='<div class="row top-buffer">';
+
+				////////////////////////
+				// OUT BUTTONS
+				////////////////////////
+				html+='<div class="col-auto top-buffer">';
+				html+='<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">';
+
+				// BUTTON GROUP LABEL
+				html+='<div class="input-group-prepend">';
+				html+='<span class="input-group-text">OUT:</span>';
+				html+='</div>';
+
+				// CREATE BUTTONS
+				for (var out=0;out<3;out++)
+					{
+					html+='<label class="btn btn-secondary ';
+					if (schedule.OUT==out) html+='active';
+					html+='"><input type="radio" name="OUT_'+sch+'" id="OUT_'+sch+'_'+out+'" value="'+out+'" ';
+					if (schedule.OUT==out) html+='checked';
+					if (out==0) html+='>OFF'; else html+='>'+out;
+					html+='</label>';
+					}
+
+				// CLOSE BUTTON GROUP DIVS
+				html+='</div>';
+				html+='</div>';
+
+				////////////////////////
+				// TIME SELECT
+				////////////////////////
+				html+='<div class="col-auto top-buffer timeselect">';
+				html+='<div class="input-group date" id="datetimepicker'+sch+'" sch='+sch+' data-target-input="nearest" width="50px">';
+				html+='<input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker3"/>';
+				html+='<div class="input-group-append" data-target="#datetimepicker'+sch+'" data-toggle="datetimepicker">';
+				html+='<div class="input-group-text"><i class="far fa-clock"></i></div>';
+				html+='</div>';
+				html+='</div>';
+				html+='</div>';
+
+				////////////////////////
+				// MINUTES BUTTONS
+				////////////////////////
+				html+='<div class="col-auto  top-buffer">';
+				html+='<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">';
+
+				// BUTTON GROUP LABEL
+				html+='<div class="input-group-prepend">';
+				html+='<span class="input-group-text">MINUTOS:</span>';
+				html+='</div>';
+
+				// CREATE BUTTONS
+				for (var min=1;min<=10;min++)
+					{
+					html+='<label class="btn btn-secondary ';
+					if (schedule.MINUTES==min) html+='active';
+					html+='"><input type="radio" name="MINUTES_'+sch+'" id="MINUTES_'+sch+'_'+min+'" value="'+min+'" ';
+					if (schedule.MINUTES==min) html+='checked';
+					html+='>'+min;
+					html+='</label>';
+					}
+
+				// CLOSE BUTTON GROUP DIVS
+				html+='</div>';
+				html+='</div>';
+
+				////////////////////////
+				// DAYS BUTTONS
+				////////////////////////
+				html+='<div class="col-auto  top-buffer">';
+				html+='<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons" id="DAYS_'+sch+'">';
+
+				// BUTTON GROUP LABEL
+				html+='<div class="input-group-prepend">';
+				html+='<span class="input-group-text">DIAS:</span>';
+				html+='</div>';
+				var days = ["", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB", "DOM"];
+
+				// CREATE BUTTONS
+				for (var day=1;day<=7;day++)
+					{
+					html+='<label class="btn btn-secondary ';
+					if (schedule.DAYS[day]==1) html+='active';
+					html+='"><input type="checkbox" name="DAYS_'+sch+'_'+day+'" id="DAYS_'+sch+'_'+day+'" ';
+					if (schedule.DAYS[day]==1) html+='checked';
+					html+='>'+days[day];
+					html+='</label>';
+					}
+
+				// CLOSE BUTTON GROUP DIVS
+				html+='</div>';
+				html+='</div>';
+
+				////////////////////////
+				// SEASONS BUTTONS
+				////////////////////////
+				html+='<div class="col-auto  top-buffer">';
+				html+='<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">';
+
+				// BUTTON GROUP LABEL
+				html+='<div class="input-group-prepend">';
+				html+='<span class="input-group-text">ESTACI&OacuteN:</span>';
+				html+='</div>';
+				var seasons = ["", "PRIMAVERA", "VERANO", "OTO&Ntilde;O", "INVIERNO"];
+
+				// CREATE BUTTONS
+				for (var sea=1;sea<=4;sea++)
+					{
+					html+='<label class="btn btn-secondary ';
+					if (schedule.SEASONS[sea]==1) html+='active';
+					html+='"><input type="checkbox" name="SEASONS_'+sch+'_'+sea+'" id="SEASONS_'+sch+'_'+sea+'" ';
+					if (schedule.SEASONS[sea]==1) html+='checked';
+					html+='>'+seasons[sea];
+					html+='</label>';
+					}
+
+				// CLOSE BUTTON GROUP DIVS
+				html+='</div>';
+				html+='</div>';
+
+				////////////////////////
+				// MANUAL BUTTONS
+				////////////////////////
+				<!-- html+='<div class="col-auto top-buffer bottom-buffer">'; -->
+				<!-- html+='<div class="btn-group btn-group-sm">'; -->
+
+				<!-- // BUTTON GROUP LABEL -->
+				<!-- html+='<div class="input-group-prepend">'; -->
+				<!-- html+='<span class="input-group-text">MANUAL:</span>'; -->
+				<!-- html+='</div>'; -->
+
+				<!-- // CREATE BUTTONS -->
+				<!-- for (var man=0;man<=5;man++) -->
+					<!-- { -->
+					<!-- html+='<button type="button" class="btn btn-secondary" onclick="MovePump('+sch+','+man+');">'; -->
+					<!-- // STOP BUTTON	 -->
+					<!-- if (man==0) html+='STOP'; -->
+					<!-- else {html+=man;html+='min';} -->
+					<!-- html+='</button>'; -->
+					<!-- } -->
+
+				<!-- // CLOSE BUTTON GROUP DIVS -->
+				<!-- html+='</div>'; -->
+				<!-- html+='</div>'; -->
+
+				// PUBLISH BUTTON
+				html+='<div class="col-auto top-buffer bottom-buffer">';
+				html+='<button type="button" class="btn btn-primary btn-sm" onclick="publishdata('+sch+');">PUBLICAR</button>';
+				html+='</div>';
+
+				// CLOSE CONTAINER AND ROW DIVS
+				html+='</div>';
+				html+='</div>';
+				}
+
+			$("#SCHEDULES").html(html);
+
+			for (const [sch, schedule] of Object.entries(schedules))
+				$('#datetimepicker'+sch).datetimepicker({format: 'HH:mm', date:moment({ hour: schedule.START_TIME.HOUR, minute: schedule.START_TIME.MINUTES })});
+
+
+		}
+	//SEND MOVE PUMP
+	function MovePump(schedule,Time)
+		{
+		var OUT= $('input:radio[name=OUT_'+schedule+']:checked').val();
+
+		var parameters={'out':OUT,'time':Time};
+
+		$.post('MovePump.php',parameters,
+		  function(res)
+		  {
+		  if (res.indexOf("OK")!=-1) alertify.success(res);
+		  if (res.indexOf("KO")!=-1) alertify.error(res);
+		  });
+		}
+
+	// SEND JSON WITH SCHEDULE
+	var id=10;
+	function publishdata(schedule)
+		{
+		// JSON VARIABLE
+		var VALUE={
+		OUT: parseInt($('input:radio[name=OUT_'+schedule+']:checked').val()),
+		MINUTES: parseInt($('input:radio[name=MINUTES_'+schedule+']:checked').val()),
+		DAYS: {},
+		SEASONS: {},
+		START_TIME:{},
+		};
+
+		// get date and set HOUR and MINUTES in START_TIME
+		var date = $('#datetimepicker'+schedule).datetimepicker('viewDate');
+		VALUE.START_TIME['HOUR']=parseInt(date.format("HH"));
+		VALUE.START_TIME['MINUTES']=parseInt(date.format("mm"));
+
+		// SET DAYS
+		for (var day=1;day<=7;day++) VALUE.DAYS[day]=$('#DAYS_'+schedule+'_'+day).parent().hasClass('active');
+		// SET SEASONS
+		for (var sea=1;sea<=4;sea++) VALUE.SEASONS[sea]=$('#SEASONS_'+schedule+'_'+sea).parent().hasClass('active');
+
+		// CREATE SERVICE CALL DATA
+		var SERVICE={
+		'id': id,
+		'type': 'call_service',
+		'domain': 'mqtt',
+		'service': 'publish',
+		'service_data': {
+			'topic': 'irrigation/esclavas/schedule'+schedule.toString(),
+			'payload': JSON.stringify(VALUE),
+			'retain':'true'
+			}
+		}
+
+		// INCREASE ID FOR NEXT SERVICE CALL
+		id++;
+
+		socket.send(JSON.stringify(SERVICE));
+		//console.log(SERVICE);
+		}
+
+
+		// REFRESH TOKEN
+		function refresh_token()
+			{
+			// RETRIEVE LAST hassToken
+			var hassTokens = JSON.parse(localStorage.getItem('hassTokens'));
+
+			// JSON VARIABLE
+			var post_data={
+			client_id: hassTokens.clientId,
+			refresh_token: hassTokens.refresh_token,
+			grant_type: 'refresh_token'
+			};
+
+			// POST REFRESH TOKEN
+			$.post('/auth/token',post_data)
+				.done(function(msg)
+					{
+					console.log(msg);
+					var hassTokens = JSON.parse(localStorage.getItem('hassTokens'));
+					hassTokens.access_token=msg.access_token;
+					hassTokens.token_type=msg.token_type;
+					hassTokens.expires_in=msg.expires_in;
+					localStorage.setItem('hassTokens',JSON.stringify(hassTokens));
+					})
+				.fail(function(xhr, status, error) {console.log("ERROR: "+error+" STATUS: "+status);});
+			}
+
+			// SLEEP MILLISECONDS
+			function sleep(milliseconds)
+				{
+			  const date = Date.now();
+			  let currentDate = null;
+			  do
+					{
+			    currentDate = Date.now();
+			  	} while (currentDate - date < milliseconds);
+				}
+
+    </script>
+
+</html>

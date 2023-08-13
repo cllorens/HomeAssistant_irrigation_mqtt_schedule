@@ -133,6 +133,82 @@ automation:
 
 ```
 
+to add control for the vessel tare in home assistant:
+
+```yaml
+# Configuration number for the tare
+input_number:
+   vessel_tare:
+    name: Tara vasija
+    min: 30000
+    max: 35000
+    step: 0.1
+    unit_of_measurement: kg
+    icon: mdi:scale-balance
+
+# On Change in topic modify number
+automation:
+  - alias: Set vessel tare
+    trigger:
+      platform: mqtt
+      topic: 'irrigation/esclavas/tare'
+    action:
+      service: input_number.set_value
+      data_template:
+        entity_id: input_number.vessel_tare
+        value: "{{ trigger.payload }}"
+
+# On modify number modify topic
+  - alias: Vessel tare moved
+    trigger:
+      platform: state
+      entity_id: input_number.vessel_tare
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: 'irrigation/esclavas/tare'
+        retain: true
+        payload: "{{ states('input_number.vessel_tare') | int }}"
+```
+
+to add control to the vessel max value in orde to calc the rgb color for the leds in the m5stack:
+
+```yaml
+# Configuration number for the vessel max vallue
+input_number:
+   vessel_max:
+    name: Max vasija
+    min: 1
+    max: 100
+    step: 1
+    unit_of_measurement: l
+    icon: mdi:scale-balance
+
+# On Change in topic modify number
+automation:
+  - alias: Set vessel max
+    trigger:
+      platform: mqtt
+      topic: 'irrigation/esclavas/max'
+    action:
+      service: input_number.set_value
+      data_template:
+        entity_id: input_number.vessel_max
+        value: "{{ trigger.payload }}"
+
+# On modify number modify topic
+  - alias: Vessel max moved
+    trigger:
+      platform: state
+      entity_id: input_number.vessel_max
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: 'irrigation/esclavas/max'
+        retain: true
+        payload: "{{ states('input_number.vessel_max') | int }}"
+```
+
 you need to include this in the configuration.yaml to load all yamls in packages folder:
 ```yaml
 homeassistant:

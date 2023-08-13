@@ -4,6 +4,12 @@ when you click publish in the webpage it send a mqtt publish through the websock
 
 This is a previous and unfinished version, were irrigation folder is placed in config/www and use the homessistant api to comunicate with the m5stack throug mqtt.
 
+the stl files are for a vessel fill measurement using load cells:<br />
+**bascula_ensamblada:** vessel base with load cell holder, place for HX711 and ws2812 strip for direct vessel filled monitoring, printed in ASA.<br />
+**bascula_tapa.stl:** cover for the HX711 and ws2812 printed in transparent PETG.<br />
+**bascula_tapa_junta:** gasquet fot the cover printed in TPU.<br />
+cover is fixed using inserts and inox screws.<br />
+
 to lisen to the mqtt messages it use a automation yaml that must be included in the packes folder:
 
 ``` yaml

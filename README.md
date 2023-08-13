@@ -2,6 +2,8 @@
 Create irrigation schedules in json format in different mqtt topics.
 when you click publish in the webpage it send a mqtt publish through the websocket api.
 
+This is a previous and unfinished version, were irrigation folder is placed in config/www and use the homessistant api to comunicate with the m5stack throug mqtt.
+
 to lisen to the mqtt messages it use a automation yaml that must be included in the packes folder:
 
 ``` yaml
